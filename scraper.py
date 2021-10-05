@@ -24,7 +24,7 @@ for row in row_list:
 		da = {}
 		da['council_reference'] = None
 		da['description'] = " - ".join(description)
-		da['address'] = description[-1]
+		da['address'] = description[-1].replace(",",", ") + " WA"
 		da['date_scraped'] = today
 		da_set.append(da)
 
