@@ -22,7 +22,7 @@ for row in row_list:
 	description = cells[0].text.strip().split(" - ")
 	if description[0] == "Application for Development Approval":
 		da = {}
-		da['council_reference'] = None
+		da['council_reference'] = 0
 		da['description'] = " - ".join(description)
 		da['address'] = description[-1].replace(",",", ") + " WA"
 		da['date_scraped'] = today
