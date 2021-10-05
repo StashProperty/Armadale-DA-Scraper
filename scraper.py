@@ -14,7 +14,7 @@ soup = BeautifulSoup(raw.content, 'html.parser')
 table = soup.find_all("div",class_='view-content')[1]
 row_list  = table.find("tbody").find_all("tr")
 
-today = datetime.datetime.strftime(datetime.datetime.now(),"%d-%m-%Y")
+today = datetime.datetime.strftime(datetime.datetime.now(),"%m-%d-%Y")
 da_set = []
 
 for row in row_list:
