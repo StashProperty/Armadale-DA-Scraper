@@ -11,7 +11,7 @@ Base = declarative_base()
 DATABASE = "data.sqlite"
 DATA_TABLE = "data"
 
-engine = create_engine(f'sqlite:///{DATABASE}', echo=True)
+engine = create_engine(f'sqlite:///{DATABASE}', echo=False)
 
 
 class DA(Base):
