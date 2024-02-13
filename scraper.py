@@ -1,32 +1,54 @@
 import datetime
+
+import sqlalchemy
 from bs4 import BeautifulSoup
 import requests
+from sqlalchemy import Column, Integer, String, DATETIME
 from sqlalchemy import create_engine
-import pandas as pd
+from sqlalchemy.ext.declarative import declarative_base
+Base = declarative_base()
 
 DATABASE = "data.sqlite"
 DATA_TABLE = "data"
 
-engine = create_engine(f'sqlite:///{DATABASE}', echo=False)
+engine = create_engine(f'sqlite:///{DATABASE}', echo=True)
 
-raw = requests.get("https://www.armadale.wa.gov.au/public-notices-out-comment")
+
+class DA(Base):
+    __tablename__ = DATA_TABLE
+
+    council_reference = Column(String, primary_key=True)
+    description = Column(String)
+    address = Column(String)
+    date_created = Column(DATETIME, server_default=sqlalchemy.func.now())
+    date_scraped = Column(DATETIME)
+
+
+Base.metadata.create_all(engine)
+
+from sqlalchemy.orm import sessionmaker
+Session = sessionmaker(bind=engine)
+session = Session()
+
+raw = requests.get("https://www.armadale.wa.gov.au/community-consultation")
 soup = BeautifulSoup(raw.content, 'html.parser')
-table = soup.find_all("div",class_='view-content')[1]
-row_list  = table.find("tbody").find_all("tr")
+row_list = soup.select("table:has(caption h3:contains('Development Applications')) tr")
 
-today = datetime.datetime.strftime(datetime.datetime.now(),"%m-%d-%Y")
 da_set = []
 
 for row in row_list:
-	cells = row.find_all("td")
-	description = cells[0].text.strip().split(" - ")
-	if description[0] == "Application for Development Approval":
-		da = {}
-		da['council_reference'] = 0
-		da['description'] = " - ".join(description)
-		da['address'] = description[-1].replace(",",", ") + " WA"
-		da['date_scraped'] = today
-		da_set.append(da)
+    cells = row.find_all("td")
+    if not cells:
+        # skip header row
+        continue
+    description = cells[0].text.strip().split(" - ")
+    slug = cells[0].find("a")['href'].split("/")[-1]
 
-data = pd.DataFrame(da_set)
-data.to_sql(DATA_TABLE, con=engine, if_exists='append',index=False)
+    da = DA(
+        council_reference=slug,
+        description=" - ".join(description),
+        address=(description[-1].replace(",", ", ") + " WA").replace("  ", " "),
+        date_scraped=datetime.datetime.now()
+    )
+    session.merge(da)
+session.commit()
