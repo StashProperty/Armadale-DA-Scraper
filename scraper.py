@@ -32,7 +32,7 @@ session = Session()
 
 raw = requests.get("https://www.armadale.wa.gov.au/community-consultation")
 soup = BeautifulSoup(raw.content, 'html.parser')
-row_list = soup.select("table:has(caption h3:contains('Development Applications')) tr")
+row_list = soup.select("table:has(caption h3:-soup-contains('Development Applications')) tr")
 
 da_set = []
 
