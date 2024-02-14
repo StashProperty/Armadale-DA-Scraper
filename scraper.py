@@ -9,7 +9,7 @@ Base = declarative_base()
 DATABASE = "data.sqlite"
 DATA_TABLE = "data"
 
-engine = create_engine(f'sqlite:///{DATABASE}', echo=True)
+engine = create_engine(f'sqlite:///{DATABASE}', echo=False)
 
 
 class DA(Base):
@@ -51,6 +51,5 @@ for row in row_list:
     da.address = (description[-1].replace(",", ", ") + " WA").replace("  ", " ")
     if session.is_modified(da):
         da.date_scraped = today
-
-    session.merge(da)
+        session.merge(da)
 session.commit()
