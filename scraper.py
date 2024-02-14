@@ -1,8 +1,7 @@
 import datetime
-import sqlalchemy
 from bs4 import BeautifulSoup
 import requests
-from sqlalchemy import Column, Integer, String, DATETIME
+from sqlalchemy import Column, String
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
@@ -10,7 +9,7 @@ Base = declarative_base()
 DATABASE = "data.sqlite"
 DATA_TABLE = "data"
 
-engine = create_engine(f'sqlite:///{DATABASE}', echo=False)
+engine = create_engine(f'sqlite:///{DATABASE}', echo=True)
 
 
 class DA(Base):
@@ -19,7 +18,7 @@ class DA(Base):
     council_reference = Column(String, primary_key=True)
     description = Column(String)
     address = Column(String)
-    date_created = Column(DATETIME, server_default=sqlalchemy.func.now())
+    date_received = Column(String)
     date_scraped = Column(String)
 
 
@@ -44,11 +43,14 @@ for row in row_list:
     description = cells[0].text.strip().split(" - ")
     slug = cells[0].find("a")['href'].split("/")[-1]
 
-    da = DA(
-        council_reference=slug,
-        description=" - ".join(description),
-        address=(description[-1].replace(",", ", ") + " WA").replace("  ", " "),
-        date_scraped=today
-    )
+    da = session.get(DA, slug)
+    if not da:
+        da = DA(council_reference=slug, date_received=today)
+        session.add(da)
+    da.description = "- ".join(description)
+    da.address = (description[-1].replace(",", ", ") + " WA").replace("  ", " ")
+    if session.is_modified(da):
+        da.date_scraped = today
+
     session.merge(da)
 session.commit()
