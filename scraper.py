@@ -1,5 +1,4 @@
 import datetime
-
 import sqlalchemy
 from bs4 import BeautifulSoup
 import requests
@@ -35,6 +34,7 @@ soup = BeautifulSoup(raw.content, 'html.parser')
 row_list = soup.select("table:has(caption h3:-soup-contains('Development Applications')) tr")
 
 da_set = []
+today = datetime.datetime.strftime(datetime.datetime.now(), "%m-%d-%Y")
 
 for row in row_list:
     cells = row.find_all("td")
@@ -48,7 +48,7 @@ for row in row_list:
         council_reference=slug,
         description=" - ".join(description),
         address=(description[-1].replace(",", ", ") + " WA").replace("  ", " "),
-        date_scraped=datetime.datetime.now()
+        date_scraped=today
     )
     session.merge(da)
 session.commit()
