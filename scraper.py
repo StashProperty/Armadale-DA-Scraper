@@ -20,7 +20,7 @@ class DA(Base):
     description = Column(String)
     address = Column(String)
     date_created = Column(DATETIME, server_default=sqlalchemy.func.now())
-    date_scraped = Column(DATETIME)
+    date_scraped = Column(String)
 
 
 Base.metadata.create_all(engine)
